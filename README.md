@@ -1,13 +1,10 @@
-# Notes on ULF power
+# ULF Power Module
 
-The minimum values for summed and integrated PSD are 
-- spsd 1E-6
-- ipsd 1E-7
+This code calculates hourly power spectral density (PSD) from ground-based magnetometer data. It uses the module ```gmag``` to read in ground-based magnetometer data and ```scipy``` to calculate PSD. The power spectra density is saved as csv files using Pandas. The code also has some basic reading and writing of the saved csv files.
 
-This was acomplised by looking at the GILL spectra and narrowing in on power spectra that with small values to identify periods where the magnetometer where showing no power. 
+- ```sum_psd``` will read in the csv PSD and calculate summed and integrated over a fixed frequency range for a given date range or number of days.
+- ```get_spec``` will read in the csv PSD spectra over a fixed frequency range for a given date range or number of days.
+- ```ulf_database``` will read in a blocks of PSD (stations and dates) and output an hdf5 of summed (and integrated) or spectra PSD. This simplifies analysis of the dataset. 
 
-An example of this is 2014-03-13. The magnetometer has no bad data however the spectra is flat. The sum power returned is below 1E-17. 
+Each of the reading in codes can also added hourly lagged omni to the PSD. This requires the ```gmag``` and ```heliopy``` packages. 
 
-Another example is 2014-06-23. The magnetometer has a short period of data followed by a flat line. The summed power returned is 5.25E-5.
-
-Taking this into account it seems sensible to drop summed power below 1E-6 and integrated power below 1E-7.
