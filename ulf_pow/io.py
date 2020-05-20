@@ -140,6 +140,7 @@ def get_spec(site, sdate,  edate=None, ndays=1,
             # get frequency resolution
             f_res = freq.iloc[1]-freq.iloc[0]
             # trasnpose array and drop new index column
+            # convert from nT^2/Hz  to nT^2/mHz
             df_in = df_in.transpose().reset_index()
             df_in = df_in.drop(labels=['index'],axis=1)
             df_in = df_in.div(1000.)
