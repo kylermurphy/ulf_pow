@@ -35,7 +35,7 @@ import gmag.utils as g_utils
 #TODO: add additional function to the different power functions? 
 # By station, entire array? array_pow(...)?
 
-local_dir = "E:\\data\\magnetometer\\psd\\"
+local_dir = "D:\\data\\magnetometer\\psd\\"
 
 def image_pow(site: str = ['AND'], sdate='2010-01-01', edate=None, ndays=1):
     """Calculate power for magnetometer stations
