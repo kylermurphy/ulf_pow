@@ -29,6 +29,7 @@ import os
 
 import gmag.arrays.image as image
 import gmag.arrays.carisma as carisma
+import gmag.arrays.canopus as canopus
 import gmag.utils as g_utils
 
 #TODO: add config parser for data dir
@@ -154,6 +155,62 @@ def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1):
                      site=ss.upper(),
                      res=res)
 
+def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1):
+    """Calculate power for magnetometer stations
+    from the CANOPUS array. 
+
+    Hourly Power Spectral Density (PSD) is calculated
+    for the D component of the ground-based magnetoemeter. 
+
+    Power is stored in a Panda's dataframe and written
+    out as compressed csv file.
+    
+    Parameters
+    ----------
+    site : str, optional
+        Magnetometer stations to be processed, by default ['GILL']
+    sdate : str, optional
+        Start date to process power, by default '2010-01-01'
+    edate : [type], optional
+        End date for calculating power, by default None
+    ndays : int, optional
+        Number of days to process following start date, by default 1.
+        This is ignored if edate is specified.
+    """
+    if type(site) is str:
+        site = [site]
+
+    # get a list of days to loop over
+    if edate is not None:
+        d_arr = pd.Series(pd.date_range(start=sdate, end=edate, freq='D'))
+    else:
+        d_arr = pd.Series(pd.date_range(start=sdate, periods=ndays, freq='D'))
+
+    for di, dt in d_arr.iteritems():
+        for ss in site:
+            # load carisma data
+            i_dat = canopus.load(site=ss.upper(), sdate=dt, ndays=1)
+
+            if i_dat is None:
+                continue
+            try:
+                d = i_dat[ss.upper()+'_D'].copy()
+            except KeyError:
+                print('East/West data not returned for {0}'.format(ss))
+                continue
+            # get nominal resolution
+            res = (pd.Series(i_dat.index[1:]) -
+                   pd.Series(i_dat.index[:-1])).value_counts()
+            res = res.index[0].total_seconds()
+            # calculate power
+            hour_pow(d=d,
+                     sdate=dt,
+                     decl=i_dat.iloc[0][ss.upper()+'_declination'],
+                     cgm_lat=i_dat.iloc[0][ss.upper()+'_cgmlat'],
+                     cgm_lon=i_dat.iloc[0][ss.upper()+'_cgmlon'],
+                     l_shell=i_dat.iloc[0][ss.upper()+'_lshell'],
+                     site=ss.upper(),
+                     res=res)
 
 def hour_pow(d, sdate, decl, cgm_lat, cgm_lon, l_shell, site, res, flen=3600, s_thresh=25.):
     """Calculate hourly PSD from a time series passed by
@@ -227,6 +284,9 @@ def hour_pow(d, sdate, decl, cgm_lat, cgm_lon, l_shell, site, res, flen=3600, s_
 
     # calculate power spectral density
     for j in np.arange(0, 24):
+        if len(d) < (j + 1) * flen:
+            print('Loaded data is not an entire day, skipping hour {0}'.format(j))
+            continue
         d_fft = d[j * flen:(j + 1) * flen]
         if any(d_fft.isnull()):
             print("NaN found at hour {0}".format(j))
