@@ -159,7 +159,7 @@ def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1, m
                      site=ss.upper(), mcomp=mcomp.upper(),
                      res=res)
 
-def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1, mcomp=mcomp.upper()):
+def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1, mcomp='D'):
     """Calculate power for magnetometer stations
     from the CANOPUS array. 
 
