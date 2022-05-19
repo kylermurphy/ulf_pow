@@ -38,7 +38,7 @@ import gmag.utils as g_utils
 
 local_dir = "D:\\data\\magnetometer\\psd\\"
 
-def image_pow(site: str = ['AND'], sdate='2010-01-01', edate=None, ndays=1):
+def image_pow(site: str = ['AND'], sdate='2010-01-01', edate=None, ndays=1, mcomp='D'):
     """Calculate power for magnetometer stations
     from the IMAGE array. 
 
@@ -59,6 +59,8 @@ def image_pow(site: str = ['AND'], sdate='2010-01-01', edate=None, ndays=1):
     ndays : int, optional
         Number of days to process following start date, by default 1.
         This is ignored if edate is specified.
+    mcomp : str, optional
+        Magnetic field component to calculate power for. 
     """
     if type(site) is str:
         site = [site]
@@ -82,7 +84,7 @@ def image_pow(site: str = ['AND'], sdate='2010-01-01', edate=None, ndays=1):
 
         for ss in site:
             try:
-                d = i_dat[ss.upper()+'_D'].copy()
+                d = i_dat[ss.upper()+'_'+mcomp.upper()].copy()
             except KeyError:
                 print('East/West data not returned for {0}'.format(ss))
                 continue
@@ -94,11 +96,11 @@ def image_pow(site: str = ['AND'], sdate='2010-01-01', edate=None, ndays=1):
                      cgm_lat=i_dat.iloc[0][ss.upper()+'_cgmlat'],
                      cgm_lon=i_dat.iloc[0][ss.upper()+'_cgmlon'],
                      l_shell=i_dat.iloc[0][ss.upper()+'_lshell'],
-                     site=ss.upper(),
+                     site=ss.upper(),mcomp=mcomp.upper(),
                      res=res)
 
 
-def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1):
+def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1, mcomp='D'):
     """Calculate power for magnetometer stations
     from the CARISMA array. 
 
@@ -119,6 +121,8 @@ def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1):
     ndays : int, optional
         Number of days to process following start date, by default 1.
         This is ignored if edate is specified.
+    mcomp : str, optional
+        Magnetic field component to calculate power for. 
     """
     if type(site) is str:
         site = [site]
@@ -137,7 +141,7 @@ def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1):
             if i_dat is None:
                 continue
             try:
-                d = i_dat[ss.upper()+'_D'].copy()
+                d = i_dat[ss.upper()+'_'+mcomp.upper()].copy()
             except KeyError:
                 print('East/West data not returned for {0}'.format(ss))
                 continue
@@ -152,10 +156,10 @@ def carisma_pow(site: str = ['GILL'], sdate='2010-01-01', edate=None, ndays=1):
                      cgm_lat=i_dat.iloc[0][ss.upper()+'_cgmlat'],
                      cgm_lon=i_dat.iloc[0][ss.upper()+'_cgmlon'],
                      l_shell=i_dat.iloc[0][ss.upper()+'_lshell'],
-                     site=ss.upper(),
+                     site=ss.upper(), mcomp=mcomp.upper(),
                      res=res)
 
-def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1):
+def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1, mcomp=mcomp.upper()):
     """Calculate power for magnetometer stations
     from the CANOPUS array. 
 
@@ -175,7 +179,9 @@ def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1):
         End date for calculating power, by default None
     ndays : int, optional
         Number of days to process following start date, by default 1.
-        This is ignored if edate is specified.
+        This is ignored if edate is specified
+    mcomp : str, optional
+        Magnetic field component to calculate power for. 
     """
     if type(site) is str:
         site = [site]
@@ -194,7 +200,7 @@ def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1):
             if i_dat is None:
                 continue
             try:
-                d = i_dat[ss.upper()+'_D'].copy()
+                d = i_dat[ss.upper()+'_'+mcomp.upper()].copy()
             except KeyError:
                 print('East/West data not returned for {0}'.format(ss))
                 continue
@@ -209,10 +215,10 @@ def canopus_pow(site: str = ['GILL'], sdate='2000-01-01', edate=None, ndays=1):
                      cgm_lat=i_dat.iloc[0][ss.upper()+'_cgmlat'],
                      cgm_lon=i_dat.iloc[0][ss.upper()+'_cgmlon'],
                      l_shell=i_dat.iloc[0][ss.upper()+'_lshell'],
-                     site=ss.upper(),
+                     site=ss.upper(),mcomp=mcomp.upper(),
                      res=res)
 
-def hour_pow(d, sdate, decl, cgm_lat, cgm_lon, l_shell, site, res, flen=3600, s_thresh=25.):
+def hour_pow(d, sdate, decl, cgm_lat, cgm_lon, l_shell, site, res, mcomp, flen=3600, s_thresh=25.):
     """Calculate hourly PSD from a time series passed by
     one of the array_pow functions. 
 
@@ -243,6 +249,8 @@ def hour_pow(d, sdate, decl, cgm_lat, cgm_lon, l_shell, site, res, flen=3600, s_
         Station L-shell.
     site : [type]
         Station code.
+    mcomp : [type]
+        Magnetic field component
     res : [type]
         Time series resolution, required for calculating frequency
         resolution, and calculating the window length for each 
@@ -305,8 +313,8 @@ def hour_pow(d, sdate, decl, cgm_lat, cgm_lon, l_shell, site, res, flen=3600, s_
         os.makedirs(f_d)
 
     # print power to csv
-    fn = os.path.join(f_d, '{0:04d}{1:02d}{2:02d}{3}_psd.txt.gz'.format(
-        sdate.year, sdate.month, sdate.day, site))
+    fn = os.path.join(f_d, '{0:04d}{1:02d}{2:02d}{3}_{4}_psd.txt.gz'.format(
+        sdate.year, sdate.month, sdate.day, site, mcomp))
     pf.to_csv(fn, index=False, float_format="%E",
               na_rep='NaN', compression='gzip')
 
